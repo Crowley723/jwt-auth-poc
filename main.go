@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"http-sqlite-template/api"
-	"http-sqlite-template/db"
-	"http-sqlite-template/middlewares"
+	"jwt-auth-poc/api"
+	"jwt-auth-poc/db"
+	"jwt-auth-poc/middlewares"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -18,15 +18,13 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Initialize database
-	database, err := db.New("./data/app.db", logger)
+	database, err := db.New("./app/data/app.db", logger)
 	if err != nil {
 		logger.Error("failed to initialize database", "err", err)
 		return
 	}
 	defer database.Close()
 
-	// Run migrations
 	if err := database.RunMigrations(); err != nil {
 		logger.Error("failed to run migrations", "err", err)
 		return

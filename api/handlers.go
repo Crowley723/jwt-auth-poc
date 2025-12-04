@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"http-sqlite-template/db"
-	"http-sqlite-template/middlewares"
+	"jwt-auth-poc/db"
+	"jwt-auth-poc/middlewares"
 	"net/http"
 	"strconv"
 	"strings"

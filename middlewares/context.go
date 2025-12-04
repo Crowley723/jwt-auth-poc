@@ -3,7 +3,7 @@ package middlewares
 import (
 	"context"
 	"encoding/json"
-	"http-sqlite-template/db"
+	"jwt-auth-poc/db"
 	"log/slog"
 	"net/http"
 )

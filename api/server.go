@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"http-sqlite-template/middlewares"
+	"jwt-auth-poc/middlewares"
 )
 
 func StartServer(ctx *middlewares.AppContext) error {
