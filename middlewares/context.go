@@ -29,11 +29,12 @@ func AppContextMiddleware(baseCtx *AppContext) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			requestCtx := &AppContext{
-				Context:  r.Context(),
-				Logger:   baseCtx.Logger,
-				DB:       baseCtx.DB,
-				Request:  r,
-				Response: w,
+				Context:     r.Context(),
+				Logger:      baseCtx.Logger,
+				DB:          baseCtx.DB,
+				JWTProvider: baseCtx.JWTProvider,
+				Request:     r,
+				Response:    w,
 			}
 			ctx := context.WithValue(r.Context(), appContextKey, requestCtx)
 			next.ServeHTTP(w, r.WithContext(ctx))
@@ -53,12 +54,12 @@ func Wrap(handler AppHandler) http.HandlerFunc {
 	}
 }
 
-func GetOrCreateAppContext(r *http.Request, w http.ResponseWriter, baseCtx *AppContext, jwtProvider crypt_utils.JWTProvider) *AppContext {
+func GetOrCreateAppContext(r *http.Request, w http.ResponseWriter, baseCtx *AppContext) *AppContext {
 	return &AppContext{
 		Context:     r.Context(),
 		Logger:      baseCtx.Logger,
 		DB:          baseCtx.DB,
-		JWTProvider: jwtProvider,
+		JWTProvider: baseCtx.JWTProvider,
 		Request:     r,
 		Response:    w,
 	}

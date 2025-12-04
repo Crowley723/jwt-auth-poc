@@ -18,8 +18,8 @@ import (
 	"github.com/go-jose/go-jose/v4"
 )
 
-// handleJWKSPublicKeyGET returns the JWKS with the JWT public key
-func handleJWKSPublicKeyGET(ctx *middlewares.AppContext) {
+// HandleJWKSPublicKeyGET returns the JWKS with the JWT public key
+func HandleJWKSPublicKeyGET(ctx *middlewares.AppContext) {
 	bytes, err := os.ReadFile(crypt_utils.GetJWTPublicKeyPath())
 	if err != nil {
 		ctx.Logger.Error("failed to read crypt_utils public key", "err", err)

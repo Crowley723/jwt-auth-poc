@@ -9,6 +9,7 @@ import (
 	"jwt-auth-poc/db"
 	"jwt-auth-poc/middlewares"
 	"log/slog"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"

@@ -18,6 +18,6 @@ const (
 )
 
 const (
-	constRefreshTokenValidityPeriod = 30 * 24 * time.Hour //30 days
-	constAccessTokenValidityPeriod  = 24 * time.Hour      //24 hours
+	ConstRefreshTokenValidityPeriod = 30 * 24 * time.Hour //30 days
+	ConstAccessTokenValidityPeriod  = 24 * time.Hour      //24 hours
 )

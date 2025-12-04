@@ -12,21 +12,7 @@ import (
 func StartServer(ctx *middlewares.AppContext) error {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /health", middlewares.Wrap(handleHealthGET))
-
-	mux.HandleFunc("POST /api/login", middlewares.Wrap(handleUserLoginPost))
-	mux.HandleFunc("GET /api/users", middlewares.Wrap(handleUsersGET))
-	mux.HandleFunc("POST /api/users", middlewares.Wrap(handleUsersPOST))
-	mux.HandleFunc("GET /api/users/{id}", func(w http.ResponseWriter, r *http.Request) {
-		// These don't use Wrap due to issues with path variables.
-		appCtx := middlewares.GetOrCreateAppContext(r, w, ctx)
-		handleUserGET(appCtx)
-	})
-	mux.HandleFunc("DELETE /api/users/{id}", func(w http.ResponseWriter, r *http.Request) {
-		// These don't use Wrap due to issues with path variables.
-		appCtx := middlewares.GetOrCreateAppContext(r, w, ctx)
-		handleUserDELETE(appCtx)
-	})
+	RegisterRoutes(mux, ctx)
 
 	handler := middlewares.AppContextMiddleware(ctx)(mux)
 

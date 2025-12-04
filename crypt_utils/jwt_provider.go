@@ -12,6 +12,7 @@ import (
 type JWTProvider interface {
 	Sign(claims jwt.Claims) (string, error)
 	Validate(token string) (*jwt.Claims, error)
+	ValidateToken(token string) (map[string]interface{}, error)
 }
 
 type ecdsaJWTProvider struct {
@@ -63,4 +64,40 @@ func (p *ecdsaJWTProvider) Validate(token string) (*jwt.Claims, error) {
 	}
 
 	return &claims, nil
+}
+
+func (p *ecdsaJWTProvider) ValidateToken(token string) (map[string]interface{}, error) {
+	parsed, err := jwt.ParseSigned(token, []jose.SignatureAlgorithm{jose.ES256})
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token: %w", err)
+	}
+
+	var claims jwt.Claims
+	var customClaims map[string]interface{}
+	if err := parsed.Claims(p.publicKey, &claims, &customClaims); err != nil {
+		return nil, fmt.Errorf("failed to parse claims: %w", err)
+	}
+
+	if err := claims.Validate(jwt.Expected{
+		Time: time.Now(),
+	}); err != nil {
+		return nil, fmt.Errorf("token validation failed: %w", err)
+	}
+
+	// Merge standard and custom claims
+	result := make(map[string]interface{})
+	result["sub"] = claims.Subject
+	result["iss"] = claims.Issuer
+	result["aud"] = claims.Audience
+	result["exp"] = claims.Expiry
+	result["nbf"] = claims.NotBefore
+	result["iat"] = claims.IssuedAt
+	result["jti"] = claims.ID
+
+	// Add custom claims
+	for k, v := range customClaims {
+		result[k] = v
+	}
+
+	return result, nil
 }

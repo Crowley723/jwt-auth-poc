@@ -109,6 +109,55 @@ func (q *RefreshTokenQueries) GetValidByUserID(userId int) ([]RefreshToken, erro
 	return tokens, nil
 }
 
+// GetByHashAndValidate retrieves a refresh token by its hash and validates it
+func (q *RefreshTokenQueries) GetByHashAndValidate(tokenHash string) (*RefreshToken, error) {
+	query := `
+		SELECT id, owner_id, hash, issued_at, expires_at
+		FROM refresh_tokens
+		WHERE hash = ? AND expires_at > datetime('now')
+	`
+
+	var token RefreshToken
+	err := q.db.QueryRow(query, tokenHash).Scan(
+		&token.Id,
+		&token.OwnerId,
+		&token.Hash,
+		&token.IssuedAt,
+		&token.ExpiresAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("invalid or expired refresh token")
+		}
+
+		return nil, fmt.Errorf("failed to get refresh token: %w", err)
+	}
+
+	return &token, nil
+}
+
+// DeleteByID deletes a refresh token by its ID
+func (q *RefreshTokenQueries) DeleteByID(tokenId int) error {
+	query := `DELETE FROM refresh_tokens WHERE id = ?`
+
+	result, err := q.db.Exec(query, tokenId)
+	if err != nil {
+		return fmt.Errorf("failed to delete refresh token: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("refresh token not found")
+	}
+
+	return nil
+}
+
 // Count returns the total number of refresh tokens
 func (q *RefreshTokenQueries) Count() (int, error) {
 	query := "SELECT COUNT(*) FROM refresh_tokens"
