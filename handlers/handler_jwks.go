@@ -10,7 +10,7 @@ import (
 	"encoding/pem"
 	"log/slog"
 
-	"jwt-auth-poc/jwt"
+	"jwt-auth-poc/crypt_utils"
 	"jwt-auth-poc/middlewares"
 	"net/http"
 	"os"
@@ -20,16 +20,16 @@ import (
 
 // handleJWKSPublicKeyGET returns the JWKS with the JWT public key
 func handleJWKSPublicKeyGET(ctx *middlewares.AppContext) {
-	bytes, err := os.ReadFile(jwt.GetJWTPublicKeyPath())
+	bytes, err := os.ReadFile(crypt_utils.GetJWTPublicKeyPath())
 	if err != nil {
-		ctx.Logger.Error("failed to read jwt public key", "err", err)
+		ctx.Logger.Error("failed to read crypt_utils public key", "err", err)
 		ctx.SetJSONError(http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
 	block, _ := pem.Decode(bytes)
 	if block == nil {
-		ctx.Logger.Error("failed to decode jwt public key")
+		ctx.Logger.Error("failed to decode crypt_utils public key")
 		ctx.SetJSONError(http.StatusInternalServerError, "Internal server error")
 		return
 	}
@@ -41,14 +41,14 @@ func handleJWKSPublicKeyGET(ctx *middlewares.AppContext) {
 		return
 	case "PUBLIC KEY":
 	default:
-		ctx.Logger.Error("unknown jwt public key type", "type", block.Type)
+		ctx.Logger.Error("unknown crypt_utils public key type", "type", block.Type)
 		ctx.SetJSONError(http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
 	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		ctx.Logger.Error("failed to parse jwt public key", "err", err)
+		ctx.Logger.Error("failed to parse crypt_utils public key", "err", err)
 		ctx.SetJSONError(http.StatusInternalServerError, "Internal server error")
 		return
 	}

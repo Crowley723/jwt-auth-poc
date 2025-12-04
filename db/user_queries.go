@@ -9,11 +9,12 @@ import (
 
 // User represents a user in the database
 type User struct {
-	ID        int       `json:"id"`
-	Email     string    `json:"email"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID           int       `json:"id"`
+	Email        string    `json:"email"`
+	Name         string    `json:"name"`
+	PasswordHash string    `json:"password_hash,omitempty"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 // UserQueries provides database operations for users
@@ -27,13 +28,13 @@ func NewUserQueries(db *DB) *UserQueries {
 }
 
 // Create inserts a new user
-func (q *UserQueries) Create(email, name string) (*User, error) {
+func (q *UserQueries) Create(email, name, passwordHash string) (*User, error) {
 	query := `
-		INSERT INTO users (email, name, created_at, updated_at)
-		VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+		INSERT INTO users (email, name, password_hash, created_at, updated_at)
+		VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	`
 
-	result, err := q.db.Exec(query, email, name)
+	result, err := q.db.Exec(query, email, name, passwordHash)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
@@ -88,6 +89,31 @@ func (q *UserQueries) GetByEmail(email string) (*User, error) {
 		&user.Name,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, fmt.Errorf("failed to get user by email: %w", err)
+	}
+
+	return &user, nil
+}
+
+// GetUserDetailsByEmail retrieves a user's password by email
+func (q *UserQueries) GetUserDetailsByEmail(email string) (*User, error) {
+	query := `
+		SELECT id, email, password_hash
+		FROM users
+		WHERE email = ?
+	`
+
+	var user User
+	err := q.db.QueryRow(query, email).Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
 	)
 
 	if err != nil {

@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"encoding/json"
+	"jwt-auth-poc/crypt_utils"
 	"jwt-auth-poc/db"
 	"log/slog"
 	"net/http"
@@ -10,10 +11,11 @@ import (
 
 type AppContext struct {
 	context.Context
-	Logger   *slog.Logger
-	DB       *db.DB
-	Request  *http.Request
-	Response http.ResponseWriter
+	Logger      *slog.Logger
+	DB          *db.DB
+	JWTProvider crypt_utils.JWTProvider
+	Request     *http.Request
+	Response    http.ResponseWriter
 }
 
 type contextKey string
@@ -51,22 +53,24 @@ func Wrap(handler AppHandler) http.HandlerFunc {
 	}
 }
 
-func GetOrCreateAppContext(r *http.Request, w http.ResponseWriter, baseCtx *AppContext) *AppContext {
+func GetOrCreateAppContext(r *http.Request, w http.ResponseWriter, baseCtx *AppContext, jwtProvider crypt_utils.JWTProvider) *AppContext {
 	return &AppContext{
-		Context:  r.Context(),
-		Logger:   baseCtx.Logger,
-		DB:       baseCtx.DB,
-		Request:  r,
-		Response: w,
+		Context:     r.Context(),
+		Logger:      baseCtx.Logger,
+		DB:          baseCtx.DB,
+		JWTProvider: jwtProvider,
+		Request:     r,
+		Response:    w,
 	}
 }
 
 // NewAppContext creates a new AppContext
-func NewAppContext(ctx context.Context, logger *slog.Logger, database *db.DB) *AppContext {
+func NewAppContext(ctx context.Context, logger *slog.Logger, database *db.DB, jwtProvider crypt_utils.JWTProvider) *AppContext {
 	return &AppContext{
-		Context: ctx,
-		Logger:  logger,
-		DB:      database,
+		Context:     ctx,
+		Logger:      logger,
+		DB:          database,
+		JWTProvider: jwtProvider,
 	}
 }
 
